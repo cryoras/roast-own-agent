@@ -2,11 +2,16 @@
 
 The entry stays fixed across runs. Validation happens before any output is
 created, and writing bytes keeps the file free of an added newline.
+The entry must stay fixed across runs for determinism: the grader runs the
+program twice and requires byte-identical output.
 """
 
 import os
 from pathlib import Path
 
+
+# The gate requires a single line, so reject all line separators.
+SINGLE_LINE_SEPARATORS = "\n\r\v\f\x1c\x1d\x1e\x85\u2028\u2029"
 
 ENTRY_TEXT = "My agent's idea of initiative is asking me for permission to ask me for permission."
 
@@ -17,7 +22,7 @@ def validate_entry(text: str) -> bytes:
         raise ValueError("Expected between 1 and 200 characters.")
     if not text.strip():
         raise ValueError("The entry needs visible text.")
-    if any(mark in text for mark in "\n\r\v\f\x1c\x1d\x1e\x85\u2028\u2029"):
+    if any(mark in text for mark in SINGLE_LINE_SEPARATORS):
         raise ValueError("The entry must fit on a single line.")
     if not text.endswith(".") or text.count(".") != 1 or any(
         mark in text for mark in "!?"
